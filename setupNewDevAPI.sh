@@ -31,7 +31,7 @@ dirPath=/spec/Syrinx.$dirName
 branch=${4:-dev}
 
 echo "cloning API to $dirPath"
-mkdir $dirPath
+mkdir -p $dirPath
 git clone -b master git@github.com:Tradetech/syrinxapi.git $dirPath
 
 cd $dirPath
@@ -65,7 +65,7 @@ find $dirPath/. -type d -exec chmod 0775 {} \;
 #for bin
 find $dirPath/bin -type f -exec chmod 0775 {} \;
 echo "update owner of files to dev:dev"
-sudo chown -R root:root $dirPath/.
+chown -R root:root $dirPath/.
 
 echo "append to the /etc/nginx/conf.d/repos.d/nodeservers.all the rerouting required for dev frontends to use the api"
 echo "
@@ -79,14 +79,14 @@ echo "
         rewrite /node$2(.*) \$1 break;
         proxy_pass  http://dev.tradetech.net:$2;
     }
-" | sudo tee -a /etc/nginx/conf.d/repos.d/nodeservers.all
+" | tee -a /etc/nginx/conf.d/repos.d/nodeservers.all
 
-sudo /etc/init.d/nginx configtest
-sudo /etc/init.d/nginx restart
+/etc/init.d/nginx configtest
+/etc/init.d/nginx restart
 
 echo "add to /etc/inittab so that the api is constantly running"
-echo "DE$3:4:respawn:$dirPath/bin/DataEngine >> /var/log/inittab/Syrinx.$1.DataEngine.log 2>&1" | sudo tee -a /etc/inittab
-sudo /sbin/init q
+echo "DE$3:4:respawn:$dirPath/bin/DataEngine >> /var/log/inittab/Syrinx.$1.DataEngine.log 2>&1" | tee -a /etc/inittab
+/sbin/init q
 
 echo "Put the name you came up with in to the ansible task options for updating dev apis, name should be: .$1";
 echo "if there are any errors trying to start up this api, they will show up here in this tail of /var/log/inittab/Syrinx.$1.DataEngine.log"
